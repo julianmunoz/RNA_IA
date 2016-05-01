@@ -33,12 +33,12 @@ class RNAGenerator(object):
         ds = SupervisedDataSet(input_l, output_l)
         return net, ds
 
-    def train_network(self, net, ds):
+    def train_network(self, net, ds, iterate_elem_creation):
         # Create sample for our problem
         data_dict = {}
         data_generator = GenerateDataSet()
 
-        for elem in range(1, 180):
+        for elem in range(1, iterate_elem_creation):
             skinny_info, skinny_result = data_generator.generate_skinny()
             data_dict[skinny_info] = skinny_result
             common_info, common_result = data_generator.generate_common()
@@ -64,7 +64,7 @@ class RNAGenerator(object):
 
 gen_RNA = RNAGenerator()
 net, ds = gen_RNA.initialize_network(3, 10, 1)
-gen_RNA.train_network(net, ds)
+gen_RNA.train_network(net, ds, 180)
 
 
 """
