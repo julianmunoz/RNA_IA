@@ -25,12 +25,12 @@ class GenerateDataSet(object):
 
 class RNAGenerator(object):
 
-    def initialize_network(self):
+    def initialize_network(self, input_l, hidden_l, output_l):
         # 3 inputs, 10 hidden and a single output neuron
-        net = buildNetwork(3, 10, 1, bias=True, hiddenclass=TanhLayer)
+        net = buildNetwork(input_l, hidden_l, output_l, bias=True, hiddenclass=TanhLayer)
 
         # Here we have generated a dataset that supports 3 dimensional inputs and one dimensional targets
-        ds = SupervisedDataSet(3, 1)
+        ds = SupervisedDataSet(input_l, output_l)
         return net, ds
 
     def train_network(self, net, ds):
@@ -63,7 +63,7 @@ class RNAGenerator(object):
 
 
 gen_RNA = RNAGenerator()
-net, ds = gen_RNA.initialize_network()
+net, ds = gen_RNA.initialize_network(3, 10, 1)
 gen_RNA.train_network(net, ds)
 
 
