@@ -1,26 +1,11 @@
-import random
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from TrainingDataSet import TrainingDataSet
 from pybrain.tools.shortcuts import buildNetwork
 from pybrain.datasets import SupervisedDataSet
 from pybrain.supervised.trainers import BackpropTrainer
 from pybrain.structure import TanhLayer
-
-
-class GenerateDataSet(object):
-
-    def generate_gender(self):
-        return float("%s" % random.randint(0, 1))
-
-    def generate_skinny(self):
-        return (self.generate_gender(), float("%.1f" % random.uniform(0.1, 0.9)),
-               float("%.1f" % random.uniform(0.1, 0.3))), (float("%.1f" % random.uniform(0.3, 0.4)),)
-
-    def generate_common(self):
-        return (self.generate_gender(), float("%.1f" % random.uniform(0.1, 0.9)),
-           float("%.1f" % random.uniform(0.4, 0.6))), (float("%.1f" % random.uniform(0.1, 0.2)),)
-
-    def generate_obese(self):
-        return (self.generate_gender(), float("%.1f" % random.uniform(0.1, 0.9)),
-                float("%.1f" % random.uniform(0.7, 0.9))), (float("%.1f" % random.uniform(0.7, 0.9)),)
 
 
 class RNAGenerator(object):
@@ -34,63 +19,59 @@ class RNAGenerator(object):
         return net, ds
 
     def train_network(self, net, ds, iterate_elem_creation):
+        print "Entrenando la red ...\n"
         # Create sample for our problem
-        data_dict = {}
-        data_generator = GenerateDataSet()
+        data_generator = TrainingDataSet()
+        data_dict = data_generator.get_data_set()
 
-        for elem in range(1, iterate_elem_creation):
-            skinny_info, skinny_result = data_generator.generate_skinny()
-            data_dict[skinny_info] = skinny_result
-            common_info, common_result = data_generator.generate_common()
-            data_dict[common_info] = common_result
-            obese_info, obese_result = data_generator.generate_obese()
-            data_dict[obese_info] = obese_result
-
-        print data_dict
         for k, v in data_dict.iteritems():
             ds.addSample(k, v)
 
         # Backpropagation Trainer
-        trainer = BackpropTrainer(net, ds)
-        trainer.trainUntilConvergence(verbose=True, maxEpochs=60)
+        trainer = BackpropTrainer(net, ds, momentum=0.4, learningrate=0.07, weightdecay=0.01)
 
+        trainer.trainUntilConvergence(verbose=True, maxEpochs=100)
+
+        #self.validate_training(data_dict, net)
+
+    def validate_training(self, data_dict, net):
         i = 0
+        matched = 0
         for k, v in data_dict.iteritems():
             i += 1
-            print "Value from net: " + str(net.activate(k)) + " expected: " + str(v)
-            if i == 50:
-                break
+            value_from_net = net.activate(k)
+            print "Value from net: " + str(value_from_net) + " expected: " + str(v)
+            if (float("%.1f" % value_from_net) - v[0]) <= 0.0:
+                matched += 1
+        print matched
+        print str(matched * 100 / i) + '%'
+        print i
+
+    def work_with_the_RNA_live(self, net):
+        print "Ingrese valores para obtener una respuesta de la red\n"
+        print "Ingrese horario: 0.1 a 0.3 ,mañana 0.4 a 0.6  tarde, 0.7 a 0.9  noche\n"
+        time = raw_input()
+        print "Ingrese fecha: 0.1 a 0.3  Dia de la semana,0.4 a 0.6  Fin de semana,0.7 a 0.9  Fecha especial " \
+              "(Feriados, Navidad, Año nuevo, etc)\n"
+        date = raw_input()
+        print "Ingrese consumo: 0.1 a 0.3  Poco, 0.4 a 0.6  Normal, 0.7 a 0.9  Extremo\n"
+        usage = raw_input()
+        inserted_data = (time, date, usage)
+        print "Se ingreso\n"
+        print inserted_data
+        print "Valor de la red:\n"
+        print net.activate(inserted_data)
+        print "Apriete una tecla para salir"
+        raw_input()
+        return
 
 
 gen_RNA = RNAGenerator()
 net, ds = gen_RNA.initialize_network(3, 10, 1)
 gen_RNA.train_network(net, ds, 180)
+gen_RNA.work_with_the_RNA_live(net)
 
 
-"""
-Data set:
-
-Sexo:  Hombre=0; Mujer=1
-
-0.1 a 0.3 (Adolescente) edad entre 10 y 19 anos.
-0.4 a 0.7 (Joven Adulto) edad entre 20 y 30.
-0.8 a 0.9 (Adulto) edad entre 30 en adelante.
-
-0.1 a 0.3  flaco
-0.4 a 0.6 normal
-0.7 a 0.9 obeso
-
-0.1 big mac triple mac
-0.2 doble cuarto de libra cuarto de libra con queso
-0.3 magnifica
-0.4 hamburguesa con queso
-0.5 mc fiesta
-0.6 hamburguesa
-0.7 angus deluxe
-0.8 angus bacon
-0.9 angus tasty
-
-"""
 
 
 
