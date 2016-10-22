@@ -1,2 +1,2 @@
 # RNA_IA
-RNA to predict what someone will order to eat based on age, weight and gender
+RNA to predict the amount of servers instances based on date, hour, amount of users and if it is an special date or holyday. 
